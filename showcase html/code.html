@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 对话编辑器 - 终极自定义版</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-color: #6366f1;
+            --text-color: #f1f5f9;
+            --border-color: #334155;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 顶部导航 */
+        header {
+            height: 60px;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        h1 { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; color: var(--accent-color); }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary { background-color: var(--accent-color); color: white; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3); }
+        .btn-primary:hover { background-color: #4f46e5; transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+        
+        .btn-success { background-color: var(--success-color); color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
+        .btn-success:hover { background-color: #059669; transform: translateY(-1px); }
+
+        /* 主布局 */
+        main {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* 左侧：编辑器面板 */
+        .editor-pane {
+            width: 420px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* 角色卡片设计 */
+        .char-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .char-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .char-header span {
+            font-weight: 600;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* 头像上传区域 */
+        .avatar-upload-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .avatar-upload-container:hover { transform: scale(1.05); }
+
+        .avatar-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 3px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: white;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+            pointer-events: none;
+        }
+
+        .avatar-upload-container:hover .upload-overlay { opacity: 1; }
+
+        .file-input { display: none; }
+
+        /* 角色名字输入 */
+        .name-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+        }
+        .name-input:focus { border-color: var(--accent-color); }
+
+        /* 样式设置网格 */
+        .style-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .style-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .style-item label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        select, input[type="color"] {
+            width: 100%;
+            padding: 6px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        input[type="color"] { height: 35px; padding: 0; border: none; }
+
+        /* 对话剧本区域 */
+        .script-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .script-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .script-header span {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .dialogue-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-right: 5px;
+        }
+
+        .dialogue-line {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .dialogue-line:hover { border-color: var(--accent-color); }
+
+        .line-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .speaker-select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .delete-btn:hover { opacity: 1; text-decoration: underline; }
+
+        .text-area {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 40px;
+        }
+        .text-area::placeholder { color: rgba(255,255,255,0.2); }
+
+        .add-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px dashed var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .add-btn:hover { background: rgba(99, 102, 241, 0.2); }
+
+        /* 右侧预览区 */
+        .preview-pane {
+            flex: 1;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .game-window {
+            width: 800px;
+            height: 600px;
+            background: #222;
+            border: 8px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 游戏内样式 */
+        .game-scene {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 40px;
+            transition: background-image 0.5s ease;
+        }
+
+        .game-avatar {
+            width: 200px;
+            height: 350px;
+            background-size: cover;
+            background-position: top center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* 默认阴影 */
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+
+        .avatar-left { margin-left: 60px; transform: scale(0.9) translateY(20px); opacity: 0.7; filter: brightness(0.6) grayscale(0.3); }
+        .avatar-right { margin-right: 60px; transform: scale(1) translateY(0); opacity: 1; filter: brightness(1.1); }
+
+        /* 激活状态 */
+        .scene-left-active .avatar-left { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
+        .scene-left-active .avatar-right { transform: scale(0.9) translateY(20px); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
+        
+        .scene-right-active .avatar-right { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
+        .scene-right-active .avatar-left { transform: scale(0.9) translateY(20px); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
+
+        /* 头像形状应用 */
+        .shape-circle { border-radius: 50%; }
+        .shape-rounded { border-radius: 20px; }
+        .shape-square { border-radius: 0; }
+        
+        /* 头像边框应用 */
+        .border-none { border: none; }
+        .border-solid { border: 4px solid var(--avatar-border-color, white); }
+        .border-glow { box-shadow: 0 0 20px var(--avatar-border-color, white); border: 2px solid var(--avatar-border-color, white); }
+
+        .game-dialogue {
+            height: 180px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid white;
+            border-radius: 12px;
+            margin: 20px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-name {
+            position: absolute;
+            top: -18px;
+            left: 30px;
+            padding: 6px 24px;
+            background: var(--dialogue-color, #333);
+            border: 3px solid white;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .game-text {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: white;
+            white-space: pre-wrap;
+        }
+
+        .game-next {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            animation: bounce 1s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateX(200%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast.show { transform: translateX(0); }
+
+        @media (max-width: 1200px) {
+            .game-window { width: 100%; height: 100%; border: none; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎮 RPG 对话编辑器</h1>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="resetAll()">重置</button>
+        <button class="btn btn-success" onclick="exportGame()">📤 导出游戏</button>
+    </div>
+</header>
+
+<main>
+    <!-- 左侧编辑器 -->
+    <div class="editor-pane">
+        
+        <!-- 玩家卡片 -->
+        <div class="char-card" id="player-card">
+            <div class="char-header">
+                <span>玩家设定</span>
+            </div>
+            
+            <div class="avatar-upload-container" onclick="document.getElementById('player-file').click()">
+                <img src="" id="player-thumb" class="avatar-preview">
+                <div class="upload-overlay">点击上传</div>
+                <input type="file" id="player-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'player')">
+            </div>
+
+            <input type="text" class="name-input" id="player-name" placeholder="输入名字" oninput="updateName('player')">
+
+            <div class="style-grid">
+                <div class="style-item">
+                    <label>头像形状</label>
+                    <select id="player-shape" onchange="updateStyle('player')">
+                        <option value="circle">圆形</option>
+                        <option value="rounded">圆角</option>
+                        <option value="square">方形</option>
+                    </select>
+                </div>
+                <div class="style-item">
+                    <label>边框样式</label>
+                    <select id="player-border-style" onchange="updateStyle('player')">
+                        <option value="none">无</option>
+                        <option value="solid">实线</option>
+                        <option value="glow">发光</option>
+                    </select>
+                </div>
+                <div class="style-item">
+                    <label>边框/名字颜色</label>
+                    <input type="color" id="player-color" value="#3b82f6" oninput="updateStyle('player')">
+                </div>
+            </div>
+        </div>
+
+        <!-- BOSS 卡片 -->
+        <div class="char-card" id="boss-card">
+            <div class="char-header">
+                <span>BOSS 设定</span>
+            </div>
+            
+            <div class="avatar-upload-container" onclick="document.getElementById('boss-file').click()">
+                <img src="" id="boss-thumb" class="avatar-preview">
+                <div class="upload-overlay">点击上传</div>
+                <input type="file" id="boss-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'boss')">
+            </div>
+
+            <input type="text" class="name-input" id="boss-name" placeholder="输入名字" oninput="updateName('boss')">
+
+            <div class="style-grid">
+                <div class="style-item">
+                    <label>头像形状</label>
+                    <select id="boss-shape" onchange="updateStyle('boss')">
+                        <option value="circle">圆形</option>
+                        <option value="rounded">圆角</option>
+                        <option value="square">方形</option>
+                    </select>
+                </div>
+                <div class="style-item">
+                    <label>边框样式</label>
+                    <select id="boss-border-style" onchange="updateStyle('boss')">
+                        <option value="none">无</option>
+                        <option value="solid">实线</option>
+                        <option value="glow">发光</option>
+                    </select>
+                </div>
+                <div class="style-item">
+                    <label>边框/名字颜色</label>
+                    <input type="color" id="boss-color" value="#ef4444" oninput="updateStyle('boss')">
+                </div>
+            </div>
+        </div>
+
+        <!-- 背景设置 -->
+        <div class="char-card" style="align-items: stretch;">
+            <div class="char-header">
+                <span>场景背景</span>
+            </div>
+            <div class="style-grid">
+                <div class="style-item" style="grid-column: span 2;">
+                    <label>上传背景图</label>
+                    <div style="position: relative; height: 60px; border: 2px dashed var(--border-color); border-radius: 6px; overflow: hidden; cursor: pointer; background: rgba(0,0,0,0.2);" onclick="document.getElementById('bg-file').click()">
+                        <img id="bg-thumb" src="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; color: white;">点击上传</div>
+                        <input type="file" id="bg-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'bg')">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 剧本编辑 -->
+        <div class="script-section">
+            <div class="script-header">
+                <span>剧本对话</span>
+            </div>
+            <div class="dialogue-list" id="dialogue-list">
+                <!-- 动态生成 -->
+            </div>
+            <button class="add-btn" onclick="addDialogue()">+ 添加对话</button>
+        </div>
+
+    </div>
+
+    <!-- 右侧预览 -->
+    <div class="preview-pane">
+        <div class="game-window" onclick="nextDialogue()">
+            <div class="game-scene" id="game-scene">
+                <div class="game-avatar avatar-left" id="game-avatar-left"></div>
+                <div class="game-avatar avatar-right" id="game-avatar-right"></div>
+            </div>
+            <div class="game-dialogue">
+                <div class="game-name" id="game-name">???</div>
+                <div class="game-text" id="game-text">点击屏幕开始游戏</div>
+                <div class="game-next">▼</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="toast" id="toast">
+    <span>✅</span>
+    <span id="toast-msg">游戏已导出！</span>
+</div>
+
+<script>
+    // 默认数据
+    const defaultData = {
+        player: {
+            name: "勇者",
+            img: "https://picsum.photos/seed/hero/200/200",
+            shape: "circle",
+            borderStyle: "solid",
+            color: "#3b82f6"
+        },
+        boss: {
+            name: "魔王",
+            img: "https://picsum.photos/seed/villain/200/200",
+            shape: "circle",
+            borderStyle: "solid",
+            color: "#ef4444"
+        },
+        bg: "https://picsum.photos/seed/bg/800/600",
+        script: [
+            { speaker: "boss", text: "哼，你终于来了，不自量力的勇者。" },
+            { speaker: "player", text: "把公主还给我！否则我就要动粗了！" },
+            { speaker: "boss", text: "动粗？哈哈哈哈！在这个世界，只有力量才是真理！" },
+            { speaker: "player", text: "正义终将战胜邪恶！接招吧！" }
+        ]
+    };
+
+    let data = JSON.parse(JSON.stringify(defaultData));
+    let currentLine = -1;
+    let isTyping = false;
+
+    // 初始化
+    function init() {
+        loadUI();
+        renderScript();
+        updatePreview();
+    }
+
+    // --- UI 加载与更新 ---
+
+    function loadUI() {
+        // Player
+        document.getElementById('player-name').value = data.player.name;
+        document.getElementById('player-thumb').src = data.player.img;
+        document.getElementById('player-shape').value = data.player.shape;
+        document.getElementById('player-border-style').value = data.player.borderStyle;
+        document.getElementById('player-color').value = data.player.color;
+
+        // Boss
+        document.getElementById('boss-name').value = data.boss.name;
+        document.getElementById('boss-thumb').src = data.boss.img;
+        document.getElementById('boss-shape').value = data.boss.shape;
+        document.getElementById('boss-border-style').value = data.boss.borderStyle;
+        document.getElementById('boss-color').value = data.boss.color;
+
+        // BG
+        document.getElementById('bg-thumb').src = data.bg;
+    }
+
+    function updateName(role) {
+        if (role === 'player') data.player.name = document.getElementById('player-name').value;
+        if (role === 'boss') data.boss.name = document.getElementById('boss-name').value;
+        updatePreviewStatic();
+    }
+
+    function updateStyle(role) {
+        if (role === 'player') {
+            data.player.shape = document.getElementById('player-shape').value;
+            data.player.borderStyle = document.getElementById('player-border-style').value;
+            data.player.color = document.getElementById('player-color').value;
+            // 更新左侧缩略图样式
+            const thumb = document.getElementById('player-thumb');
+            applyShapeStyle(thumb, data.player);
+        } else {
+            data.boss.shape = document.getElementById('boss-shape').value;
+            data.boss.borderStyle = document.getElementById('boss-border-style').value;
+            data.boss.color = document.getElementById('boss-color').value;
+            const thumb = document.getElementById('boss-thumb');
+            applyShapeStyle(thumb, data.boss);
+        }
+        updatePreviewStatic();
+    }
+
+    function applyShapeStyle(el, config) {
+        // 重置
+        el.className = 'avatar-preview'; 
+        el.style.border = 'none';
+        el.style.boxShadow = 'none';
+        
+        // 形状
+        if (config.shape === 'circle') el.style.borderRadius = '50%';
+        if (config.shape === 'rounded') el.style.borderRadius = '16px';
+        if (config.shape === 'square') el.style.borderRadius = '0';
+
+        // 边框 (缩略图用简化样式，实际游戏用更复杂的)
+        if (config.borderStyle === 'solid') el.style.border = `3px solid ${config.color}`;
+        if (config.borderStyle === 'glow') el.style.boxShadow = `0 0 10px ${config.color}`;
+    }
+
+    function handleUpload(input, type) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64 = e.target.result;
+            if (type === 'player') {
+                data.player.img = base64;
+                document.getElementById('player-thumb').src = base64;
+            } else if (type === 'boss') {
+                data.boss.img = base64;
+                document.getElementById('boss-thumb').src = base64;
+            } else if (type === 'bg') {
+                data.bg = base64;
+                document.getElementById('bg-thumb').src = base64;
+            }
+            updatePreviewStatic();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // --- 剧本管理 ---
+
+    function renderScript() {
+        const list = document.getElementById('dialogue-list');
+        list.innerHTML = '';
+        
+        data.script.forEach((line, idx) => {
+            const div = document.createElement('div');
+            div.className = 'dialogue-line';
+            
+            const isPlayer = line.speaker === 'player';
+            const name = isPlayer ? data.player.name : data.boss.name;
+            const color = isPlayer ? data.player.color : data.boss.color;
+
+            div.innerHTML = `
+                <div class="line-controls">
+                    <select class="speaker-select" onchange="changeSpeaker(${idx}, this.value)" style="border-color:${color}">
+                        <option value="player" ${isPlayer ? 'selected' : ''}>👤 玩家</option>
+                        <option value="boss" ${!isPlayer ? 'selected' : ''}>👿 BOSS</option>
+                    </select>
+                    <button class="delete-btn" onclick="deleteLine(${idx})">删除</button>
+                </div>
+                <textarea class="text-area" placeholder="输入对话内容..." oninput="updateText(${idx}, this.value)">${line.text}</textarea>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function addDialogue() {
+        data.script.push({ speaker: 'player', text: '新对话...' });
+        renderScript();
+    }
+
+    window.changeSpeaker = function(idx, val) {
+        data.script[idx].speaker = val;
+        renderScript(); // 重新渲染以更新颜色
+    };
+
+    window.updateText = function(idx, val) {
+        data.script[idx].text = val;
+    };
+
+    window.deleteLine = function(idx) {
+        data.script.splice(idx, 1);
+        renderScript();
+        resetPreview();
+    };
+
+    // --- 预览逻辑 ---
+
+    function updatePreviewStatic() {
+        // 更新头像和名字
+        const leftAv = document.getElementById('game-avatar-left');
+        const rightAv = document.getElementById('game-avatar-right');
+        const nameTag = document.getElementById('game-name');
+
+        leftAv.style.backgroundImage = `url('${data.player.img}')`;
+        rightAv.style.backgroundImage = `url('${data.boss.img}')`;
+
+        // 应用形状和边框
+        applyGameAvatarStyle(leftAv, data.player);
+        applyGameAvatarStyle(rightAv, data.boss);
+
+        // 如果当前正在显示对话，更新名字标签颜色
+        if (currentLine >= 0) {
+            const line = data.script[currentLine];
+            const config = line.speaker === 'player' ? data.player : data.boss;
+            nameTag.style.background = config.color;
+        }
+    }
+
+    function applyGameAvatarStyle(el, config) {
+        el.className = `game-avatar`; // reset
+        // 形状
+        if (config.shape === 'circle') el.style.borderRadius = '50%';
+        if (config.shape === 'rounded') el.style.borderRadius = '30px';
+        if (config.shape === 'square') el.style.borderRadius = '0';
+        
+        // 边框/光效 (利用CSS变量或直接style)
+        el.style.removeProperty('--avatar-border-color'); // 清理变量
+        el.style.boxShadow = 'none';
+        el.style.border = 'none';
+
+        if (config.borderStyle === 'solid') {
+            el.style.border = `6px solid ${config.color}`;
+            // 为了让实线边框在圆形头像上好看，我们不需要额外处理
+        }
+        if (config.borderStyle === 'glow') {
+            el.style.boxShadow = `0 0 30px ${config.color}`;
+            el.style.border = `2px solid ${config.color}`;
+        }
+    }
+
+    function updatePreview() {
+        updatePreviewStatic();
+        resetPreview();
+    }
+
+    function resetPreview() {
+        currentLine = -1;
+        document.getElementById('game-scene').className = 'game-scene';
+        document.getElementById('game-text').innerText = "点击屏幕开始游戏";
+        document.getElementById('game-name').innerText = "???";
+        document.getElementById('game-name').style.background = "#333";
+    }
+
+    function nextDialogue() {
+        if (isTyping) return;
+
+        if (currentLine < data.script.length - 1) {
+            currentLine++;
+            const line = data.script[currentLine];
+            const isPlayer = line.speaker === 'player';
+            const config = isPlayer ? data.player : data.boss;
+
+            // 设置名字和颜色
+            const nameTag = document.getElementById('game-name');
+            nameTag.innerText = config.name;
+            nameTag.style.background = config.color;
+
+            // 切换场景状态 (谁在说话)
+            const scene = document.getElementById('game-scene');
+            if (isPlayer) {
+                scene.className = 'game-scene scene-left-active';
+            } else {
+                scene.className = 'game-scene scene-right-active';
+            }
+
+            // 打字机效果
+            typeText(line.text);
+        } else {
+            resetPreview();
+        }
+    }
+
+    function typeText(text) {
+        const el = document.getElementById('game-text');
+        el.innerText = '';
+        isTyping = true;
+        let i = 0;
+        function loop() {
+            if (i < text.length) {
+                el.innerText += text.charAt(i);
+                i++;
+                setTimeout(loop, 40);
+            } else {
+                isTyping = false;
+            }
+        }
+        loop();
+    }
+
+    function resetAll() {
+        if(confirm('确定重置所有设置吗？')) {
+            data = JSON.parse(JSON.stringify(defaultData));
+            loadUI();
+            renderScript();
+            updatePreview();
+        }
+    }
+
+    // --- 导出功能 ---
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function exportGame() {
+        const json = JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+        
+        const css = `
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: sans-serif; }
+            #game { width: 100%; height: 100%; max-width: 1000px; max-height: 800px; display: flex; flex-direction: column; background: #222; box-shadow: 0 0 50px rgba(0,0,0,0.5); position: relative; }
+            .scene { flex: 1; background-size: cover; background-position: center; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 40px; transition: 0.3s; }
+            .avatar { width: 25vw; height: 60vh; background-size: cover; background-position: top center; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+            .avatar.left { margin-left: 50px; transform: scale(0.9) translateY(20px); opacity: 0.6; }
+            .avatar.right { margin-right: 50px; transform: scale(1); opacity: 1; }
+            .scene.s-left .avatar.left { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
+            .scene.s-left .avatar.right { transform: scale(0.9); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
+            .scene.s-right .avatar.right { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
+            .scene.s-right .avatar.left { transform: scale(0.9); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
+            .dialogue-box { height: 25vh; background: rgba(0,0,0,0.9); border: 3px solid #fff; border-radius: 12px; margin: 20px; padding: 25px; display: flex; flex-direction: column; position: relative; backdrop-filter: blur(5px); }
+            .name-tag { position: absolute; top: -20px; left: 30px; padding: 8px 24px; border-radius: 30px; border: 3px solid #fff; font-weight: bold; font-size: 1.2rem; color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.3s; }
+            .text { margin-top: 15px; font-size: 1.2rem; color: #fff; white-space: pre-wrap; line-height: 1.6; }
+            .next { position: absolute; bottom: 15px; right: 20px; animation: bounce 1s infinite; }
+            @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+            @media (max-width: 600px) { .avatar { width: 40vw; } .dialogue-box { margin: 10px; height: 30vh; } }
+        `;
+
+        const js = `
+            const d = JSON.parse("${json}");
+            let idx = -1, typing = false;
+            const scene = document.getElementById('scene');
+            const avL = document.getElementById('avL');
+            const avR = document.getElementById('avR');
+            const name = document.getElementById('name');
+            const txt = document.getElementById('txt');
+            const game = document.getElementById('game');
+
+            // 设置初始资源
+            scene.style.backgroundImage = 'url(' + d.bg + ')';
+            avL.style.backgroundImage = 'url(' + d.player.img + ')';
+            avR.style.backgroundImage = 'url(' + d.boss.img + ')';
+
+            // 应用形状样式
+            function applyAvatar(el, c) {
+                if(c.shape==='circle') el.style.borderRadius='50%';
+                if(c.shape==='rounded') el.style.borderRadius='30px';
+                if(c.shape==='square') el.style.borderRadius='0';
+                el.style.boxShadow='none'; el.style.border='none';
+                if(c.borderStyle==='solid') el.style.border='6px solid '+c.color;
+                if(c.borderStyle==='glow') { el.style.boxShadow='0 0 30px '+c.color; el.style.border='2px solid '+c.color; }
+            }
+            applyAvatar(avL, d.player);
+            applyAvatar(avR, d.boss);
+
+            game.onclick = function(){
+                if(typing) return;
+                if(idx < d.script.length - 1){
+                    idx++;
+                    const l = d.script[idx];
+                    const isP = l.speaker === 'player';
+                    const cfg = isP ? d.player : d.boss;
+                    
+                    name.innerText = cfg.name;
+                    name.style.background = cfg.color;
+                    
+                    if(isP) scene.className = 'scene s-left';
+                    else scene.className = 'scene s-right';
+
+                    type(l.text);
+                } else {
+                    idx = -1;
+                    txt.innerText = "点击重播";
+                    scene.className = 'scene';
+                    name.style.background = '#333';
+                    name.innerText = '???';
+                }
+            };
+            function type(str){
+                txt.innerText=''; typing=true;
+                let i=0;
+                function t(){
+                    if(i<str.length){ txt.innerText+=str.charAt(i); i++; setTimeout(t,40); }
+                    else typing=false;
+                }
+                t();
+            }
+        `;
+
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RPG Game</title><style>${css}</style></head><body><div id="game"><div class="scene" id="scene"><div class="avatar left" id="avL"></div><div class="avatar right" id="avR"></div></div><div class="dialogue-box"><div class="name-tag" id="name">???</div><div class="text" id="txt">点击屏幕开始</div><div class="next">▼</div></div></div><script>${js}<\/script></body></html>`;
+
+        const blob = new Blob([html], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `rpg-game-${Date.now()}.html`;
+        a.click();
+        showToast("游戏导出成功！");
+    }
+
+    // 启动
+    init();
+
+</script>
+</body>
+</html>
