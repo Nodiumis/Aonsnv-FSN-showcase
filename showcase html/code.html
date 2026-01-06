@@ -3,960 +3,661 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPG 对话编辑器 - 终极自定义版</title>
+    <title>年度回顾 - 图片版</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --accent-color: #6366f1;
-            --text-color: #f1f5f9;
-            --border-color: #334155;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
+            --primary-color: #00f2ff;
+            --secondary-color: #bd00ff;
+            --bg-color: #050505;
+            --panel-bg: rgba(20, 20, 30, 0.9);
+            --text-color: #ffffff;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            font-family: var(--font-family);
+            overflow: hidden;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* 顶部导航 */
-        header {
-            height: 60px;
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-
-        h1 { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 10px; color: var(--accent-color); }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary { background-color: var(--accent-color); color: white; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3); }
-        .btn-primary:hover { background-color: #4f46e5; transform: translateY(-1px); }
-        .btn-primary:active { transform: translateY(0); }
-        
-        .btn-success { background-color: var(--success-color); color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3); }
-        .btn-success:hover { background-color: #059669; transform: translateY(-1px); }
-
-        /* 主布局 */
-        main {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            overflow: hidden;
-        }
-
-        /* 左侧：编辑器面板 */
-        .editor-pane {
-            width: 420px;
-            background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            flex-shrink: 0;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        /* 角色卡片设计 */
-        .char-card {
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .char-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        
-        .char-header span {
-            font-weight: 600;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-        }
-
-        /* 头像上传区域 */
-        .avatar-upload-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .avatar-upload-container:hover { transform: scale(1.05); }
-
-        .avatar-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border: 3px solid var(--border-color);
-            transition: all 0.3s;
-        }
-
-        .upload-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-            color: white;
-            font-size: 0.8rem;
-            text-align: center;
-            padding: 5px;
-            pointer-events: none;
-        }
-
-        .avatar-upload-container:hover .upload-overlay { opacity: 1; }
-
-        .file-input { display: none; }
-
-        /* 角色名字输入 */
-        .name-input {
-            width: 100%;
-            padding: 8px 12px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: white;
-            text-align: center;
-            font-weight: 600;
-        }
-        .name-input:focus { border-color: var(--accent-color); }
-
-        /* 样式设置网格 */
-        .style-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .style-item {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .style-item label {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        select, input[type="color"] {
-            width: 100%;
-            padding: 6px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-        }
-
-        input[type="color"] { height: 35px; padding: 0; border: none; }
-
-        /* 对话剧本区域 */
-        .script-section {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .script-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .script-header span {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #94a3b8;
-        }
-
-        .dialogue-list {
-            max-height: 300px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-right: 5px;
-        }
-
-        .dialogue-line {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: border-color 0.2s;
-        }
-
-        .dialogue-line:hover { border-color: var(--accent-color); }
-
-        .line-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .speaker-select {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        .delete-btn:hover { opacity: 1; text-decoration: underline; }
-
-        .text-area {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 40px;
-        }
-        .text-area::placeholder { color: rgba(255,255,255,0.2); }
-
-        .add-btn {
-            width: 100%;
-            padding: 10px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px dashed var(--accent-color);
-            color: var(--accent-color);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .add-btn:hover { background: rgba(99, 102, 241, 0.2); }
-
-        /* 右侧预览区 */
-        .preview-pane {
-            flex: 1;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 20px;
-        }
-
-        .game-window {
-            width: 800px;
-            height: 600px;
-            background: #222;
-            border: 8px solid #444;
-            border-radius: 8px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* 游戏内样式 */
-        .game-scene {
-            flex: 1;
+            width: 100vw;
+            /* 背景图样式 */
             background-size: cover;
             background-position: center;
-            position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding-bottom: 40px;
-            transition: background-image 0.5s ease;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
 
-        .game-avatar {
-            width: 200px;
-            height: 350px;
-            background-size: cover;
-            background-position: top center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* 默认阴影 */
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px;
         }
 
-        .avatar-left { margin-left: 60px; transform: scale(0.9) translateY(20px); opacity: 0.7; filter: brightness(0.6) grayscale(0.3); }
-        .avatar-right { margin-right: 60px; transform: scale(1) translateY(0); opacity: 1; filter: brightness(1.1); }
+        header { pointer-events: auto; text-align: left; text-shadow: 0 0 15px rgba(0, 242, 255, 0.6); }
+        h1 { font-size: 3rem; font-weight: 800; background: linear-gradient(90deg, #fff, var(--primary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0; }
 
-        /* 激活状态 */
-        .scene-left-active .avatar-left { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
-        .scene-left-active .avatar-right { transform: scale(0.9) translateY(20px); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
+        /* 顶部按钮 */
+        .top-tools {
+            position: absolute; top: 20px; right: 20px;
+            display: flex; gap: 10px; pointer-events: auto;
+        }
+        .btn-tool {
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem;
+            backdrop-filter: blur(5px); transition: all 0.2s;
+        }
+        .btn-tool:hover { background: var(--primary-color); color: #000; border-color: var(--primary-color); }
+
+        /* 底部控制器 */
+        .controls {
+            pointer-events: auto;
+            position: absolute; bottom: 20px; left: 20px; width: 280px;
+            background: var(--panel-bg); backdrop-filter: blur(15px);
+            padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: var(--primary-color); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+        }
+        button:hover { background: rgba(255,255,255,0.2); }
+        button.active { background: var(--secondary-color); border-color: var(--secondary-color); color: #fff; }
+
+        /* 编辑弹窗 */
+        .editor-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .editor-modal.open { display: flex; opacity: 1; }
+
+        .editor-content {
+            background: #1a1a20; width: 90%; max-width: 700px; height: 85vh;
+            border-radius: 20px; border: 1px solid var(--primary-color);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.15);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center; background: #222;
+        }
+        .editor-header h2 { font-size: 1.4rem; color: #fff; }
+        .close-btn { background: none; border: none; color: #aaa; font-size: 2rem; cursor: pointer; line-height: 1; }
+        .close-btn:hover { color: #fff; }
+
+        .editor-body { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        .scene-right-active .avatar-right { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
-        .scene-right-active .avatar-left { transform: scale(0.9) translateY(20px); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
-
-        /* 头像形状应用 */
-        .shape-circle { border-radius: 50%; }
-        .shape-rounded { border-radius: 20px; }
-        .shape-square { border-radius: 0; }
+        /* 文件上传区域 */
+        .upload-section {
+            background: #25252e; padding: 15px; border-radius: 10px; border: 1px dashed #555;
+            display: flex; align-items: center; justify-content: space-between; gap: 15px;
+        }
+        .file-input-label { cursor: pointer; color: var(--primary-color); font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .file-input-label:hover { text-decoration: underline; }
         
-        /* 头像边框应用 */
-        .border-none { border: none; }
-        .border-solid { border: 4px solid var(--avatar-border-color, white); }
-        .border-glow { box-shadow: 0 0 20px var(--avatar-border-color, white); border: 2px solid var(--avatar-border-color, white); }
-
-        .game-dialogue {
-            height: 180px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 3px solid white;
-            border-radius: 12px;
-            margin: 20px;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            backdrop-filter: blur(10px);
+        textarea {
+            width: 100%; height: 250px; background: #111; color: #ddd;
+            border: 1px solid #444; border-radius: 8px; padding: 15px;
+            font-family: 'Consolas', monospace; font-size: 13px; resize: vertical;
         }
 
-        .game-name {
-            position: absolute;
-            top: -18px;
-            left: 30px;
-            padding: 6px 24px;
-            background: var(--dialogue-color, #333);
-            border: 3px solid white;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 1.3rem;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        .editor-footer {
+            padding: 20px 30px; border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: flex-end; gap: 15px; background: #222;
         }
-
-        .game-text {
-            margin-top: 10px;
-            font-size: 1.2rem;
-            line-height: 1.6;
-            color: white;
-            white-space: pre-wrap;
-        }
-
-        .game-next {
-            position: absolute;
-            bottom: 15px;
-            right: 20px;
-            animation: bounce 1s infinite;
-            cursor: pointer;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(5px); }
-        }
-
-        /* 滚动条 */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .btn-primary { background: var(--primary-color); color: #000; font-weight: bold; border: none; padding: 10px 25px; border-radius: 25px;}
+        .btn-primary:hover { background: #fff; }
+        .btn-export { background: var(--secondary-color); color: #fff; font-weight: bold; border: none; padding: 10px 25px; border-radius: 25px; }
+        .btn-export:hover { background: #d440ff; }
 
         /* Toast */
-        .toast {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--success-color);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transform: translateX(200%);
-            transition: transform 0.3s ease-out;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .toast.show { transform: translateX(0); }
+        #toast-container { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; pointer-events: none; z-index: 2000;}
+        .toast { background: rgba(0, 0, 0, 0.9); border-left: 4px solid var(--primary-color); color: #fff; padding: 12px 24px; border-radius: 4px; font-size: 0.9rem; animation: slideUp 0.3s ease-out forwards; backdrop-filter: blur(4px); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        @media (max-width: 1200px) {
-            .game-window { width: 100%; height: 100%; border: none; border-radius: 0; }
+        @media (max-width: 600px) {
+            .controls { width: 100%; bottom: 0; left: 0; border-radius: 20px 20px 0 0; padding-bottom: 30px; }
+            h1 { font-size: 2rem; margin-top: 10px; }
+            .top-tools { top: 10px; right: 20px; }
+            #toast-container { bottom: 280px; }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>🎮 RPG 对话编辑器</h1>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn btn-primary" onclick="resetAll()">重置</button>
-        <button class="btn btn-success" onclick="exportGame()">📤 导出游戏</button>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-layer">
+        <header>
+            <h1>MY 2024 REVIEW</h1>
+        </header>
+
+        <div class="top-tools">
+            <button class="btn-tool" onclick="openEditor()">
+                <span>🖼️</span> 编辑 & 导出
+            </button>
+        </div>
+
+        <aside class="controls">
+            <div class="control-group">
+                <label>运动模式 Motion Mode</label>
+                <div class="btn-grid">
+                    <button onclick="setMode('orbit')" class="active" id="btn-orbit">核心环绕</button>
+                    <button onclick="setMode('helix')" id="btn-helix">时间螺旋</button>
+                    <button onclick="setMode('grid')" id="btn-grid">全景网格</button>
+                    <button onclick="setMode('random')" id="btn-random">自由浮动</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>纹理风格 Texture</label>
+                <div class="btn-grid">
+                    <button onclick="setTexture('cyber')" class="active" id="btn-cyber">赛博网格</button>
+                    <button onclick="setTexture('glass')" id="btn-glass">极光玻璃</button>
+                    <button onclick="setTexture('dot')" id="btn-dot">科技圆点</button>
+                </div>
+            </div>
+        </aside>
     </div>
-</header>
 
-<main>
-    <!-- 左侧编辑器 -->
-    <div class="editor-pane">
-        
-        <!-- 玩家卡片 -->
-        <div class="char-card" id="player-card">
-            <div class="char-header">
-                <span>玩家设定</span>
+    <!-- 编辑弹窗 -->
+    <div class="editor-modal" id="editorModal">
+        <div class="editor-content">
+            <div class="editor-header">
+                <h2>配置中心</h2>
+                <button class="close-btn" onclick="closeEditor()">×</button>
             </div>
-            
-            <div class="avatar-upload-container" onclick="document.getElementById('player-file').click()">
-                <img src="" id="player-thumb" class="avatar-preview">
-                <div class="upload-overlay">点击上传</div>
-                <input type="file" id="player-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'player')">
-            </div>
-
-            <input type="text" class="name-input" id="player-name" placeholder="输入名字" oninput="updateName('player')">
-
-            <div class="style-grid">
-                <div class="style-item">
-                    <label>头像形状</label>
-                    <select id="player-shape" onchange="updateStyle('player')">
-                        <option value="circle">圆形</option>
-                        <option value="rounded">圆角</option>
-                        <option value="square">方形</option>
-                    </select>
-                </div>
-                <div class="style-item">
-                    <label>边框样式</label>
-                    <select id="player-border-style" onchange="updateStyle('player')">
-                        <option value="none">无</option>
-                        <option value="solid">实线</option>
-                        <option value="glow">发光</option>
-                    </select>
-                </div>
-                <div class="style-item">
-                    <label>边框/名字颜色</label>
-                    <input type="color" id="player-color" value="#3b82f6" oninput="updateStyle('player')">
-                </div>
-            </div>
-        </div>
-
-        <!-- BOSS 卡片 -->
-        <div class="char-card" id="boss-card">
-            <div class="char-header">
-                <span>BOSS 设定</span>
-            </div>
-            
-            <div class="avatar-upload-container" onclick="document.getElementById('boss-file').click()">
-                <img src="" id="boss-thumb" class="avatar-preview">
-                <div class="upload-overlay">点击上传</div>
-                <input type="file" id="boss-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'boss')">
-            </div>
-
-            <input type="text" class="name-input" id="boss-name" placeholder="输入名字" oninput="updateName('boss')">
-
-            <div class="style-grid">
-                <div class="style-item">
-                    <label>头像形状</label>
-                    <select id="boss-shape" onchange="updateStyle('boss')">
-                        <option value="circle">圆形</option>
-                        <option value="rounded">圆角</option>
-                        <option value="square">方形</option>
-                    </select>
-                </div>
-                <div class="style-item">
-                    <label>边框样式</label>
-                    <select id="boss-border-style" onchange="updateStyle('boss')">
-                        <option value="none">无</option>
-                        <option value="solid">实线</option>
-                        <option value="glow">发光</option>
-                    </select>
-                </div>
-                <div class="style-item">
-                    <label>边框/名字颜色</label>
-                    <input type="color" id="boss-color" value="#ef4444" oninput="updateStyle('boss')">
-                </div>
-            </div>
-        </div>
-
-        <!-- 背景设置 -->
-        <div class="char-card" style="align-items: stretch;">
-            <div class="char-header">
-                <span>场景背景</span>
-            </div>
-            <div class="style-grid">
-                <div class="style-item" style="grid-column: span 2;">
-                    <label>上传背景图</label>
-                    <div style="position: relative; height: 60px; border: 2px dashed var(--border-color); border-radius: 6px; overflow: hidden; cursor: pointer; background: rgba(0,0,0,0.2);" onclick="document.getElementById('bg-file').click()">
-                        <img id="bg-thumb" src="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.8rem; color: white;">点击上传</div>
-                        <input type="file" id="bg-file" class="file-input" accept="image/*" onchange="handleUpload(this, 'bg')">
+            <div class="editor-body">
+                
+                <!-- 背景上传 -->
+                <div class="upload-section">
+                    <div>
+                        <strong style="color:#fff; display:block; margin-bottom:5px;">🌍 背景图片</strong>
+                        <span style="color:#888; font-size:12px;">上传图片作为全屏背景</span>
                     </div>
+                    <input type="file" id="bgUpload" accept="image/*" style="display:none" onchange="handleBgUpload(this)">
+                    <button onclick="document.getElementById('bgUpload').click()" style="background:#333; padding:5px 10px; border-radius:4px;">选择图片</button>
                 </div>
-            </div>
-        </div>
 
-        <!-- 剧本编辑 -->
-        <div class="script-section">
-            <div class="script-header">
-                <span>剧本对话</span>
-            </div>
-            <div class="dialogue-list" id="dialogue-list">
-                <!-- 动态生成 -->
-            </div>
-            <button class="add-btn" onclick="addDialogue()">+ 添加对话</button>
-        </div>
+                <!-- 卡片图片上传 -->
+                <div class="upload-section">
+                    <div>
+                        <strong style="color:#fff; display:block; margin-bottom:5px;">👤 卡片图片 (头像)</strong>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="color:#888; font-size:12px;">序号(0-19):</span>
+                            <input type="number" id="cardIndexInput" value="0" min="0" max="19" style="width:50px; padding:4px; background:#333; color:#fff; border:1px solid #555; border-radius:4px;">
+                        </div>
+                    </div>
+                    <input type="file" id="cardUpload" accept="image/*" style="display:none" onchange="handleCardUpload(this)">
+                    <button onclick="document.getElementById('cardUpload').click()" style="background:var(--primary-color); color:#000; font-weight:bold; padding:5px 10px; border-radius:4px; border:none;">上传头像</button>
+                </div>
 
-    </div>
-
-    <!-- 右侧预览 -->
-    <div class="preview-pane">
-        <div class="game-window" onclick="nextDialogue()">
-            <div class="game-scene" id="game-scene">
-                <div class="game-avatar avatar-left" id="game-avatar-left"></div>
-                <div class="game-avatar avatar-right" id="game-avatar-right"></div>
+                <label style="color:#aaa; font-size:0.9rem; margin-top:10px;">📝 卡片数据 (JSON格式)：</label>
+                <textarea id="jsonEditor" spellcheck="false"></textarea>
+                <p style="color:#666; font-size:12px;">提示：在上传图片后，此处会自动更新包含 Base64 代码。</p>
             </div>
-            <div class="game-dialogue">
-                <div class="game-name" id="game-name">???</div>
-                <div class="game-text" id="game-text">点击屏幕开始游戏</div>
-                <div class="game-next">▼</div>
+            <div class="editor-footer">
+                <button class="btn-export" onclick="exportHTML()">📥 导出 HTML</button>
+                <button class="btn-primary" onclick="saveAndApply()">💾 保存并预览</button>
             </div>
         </div>
     </div>
-</main>
 
-<div class="toast" id="toast">
-    <span>✅</span>
-    <span id="toast-msg">游戏已导出！</span>
-</div>
+    <div id="toast-container"></div>
 
 <script>
-    // 默认数据
-    const defaultData = {
-        player: {
-            name: "勇者",
-            img: "https://picsum.photos/seed/hero/200/200",
-            shape: "circle",
-            borderStyle: "solid",
-            color: "#3b82f6"
-        },
-        boss: {
-            name: "魔王",
-            img: "https://picsum.photos/seed/villain/200/200",
-            shape: "circle",
-            borderStyle: "solid",
-            color: "#ef4444"
-        },
-        bg: "https://picsum.photos/seed/bg/800/600",
-        script: [
-            { speaker: "boss", text: "哼，你终于来了，不自量力的勇者。" },
-            { speaker: "player", text: "把公主还给我！否则我就要动粗了！" },
-            { speaker: "boss", text: "动粗？哈哈哈哈！在这个世界，只有力量才是真理！" },
-            { speaker: "player", text: "正义终将战胜邪恶！接招吧！" }
-        ]
-    };
+// === 数据配置区域 ===
+// DATA_START
+const cardData = [
+    { title: "1月", progress: 0.4, color: "#ff0055", image: "" },
+    { title: "2月", progress: 0.6, image: "" },
+    { title: "3月", progress: 0.8, color: "#00ffaa", image: "" },
+    { title: "4月", progress: 0.7, image: "" },
+    { title: "5月", progress: 0.3, image: "" },
+    { title: "6月", progress: 0.9, color: "#ffcc00", image: "" },
+    { title: "7月", progress: 0.5, image: "" },
+    { title: "8月", progress: 0.65, image: "" },
+    { title: "9月", progress: 0.75, image: "" },
+    { title: "10月", progress: 0.8, image: "" },
+    { title: "11月", progress: 0.5, image: "" },
+    { title: "12月", progress: 0.95, image: "" },
+    { title: "Total Run", progress: 0.8, color: "#00f2ff", image: "" },
+    { title: "Books Read", progress: 0.6, image: "" },
+    { title: "Money Saved", progress: 0.9, image: "" },
+    { title: "New Skill", progress: 0.85, image: "" },
+    { title: "Team Work", progress: 0.7, image: "" },
+    { title: "Best Moment", progress: 1.0, color: "#bd00ff", image: "" },
+    { title: "Trip to JP", progress: 0.8, image: "" },
+    { title: "Family Time", progress: 1.0, color: "#ff9900", image: "" }
+];
+// DATA_END
 
-    let data = JSON.parse(JSON.stringify(defaultData));
-    let currentLine = -1;
-    let isTyping = false;
+// 全局变量
+let customBgImage = ""; // 存储背景图的Base64
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-    // 初始化
-    function init() {
-        loadUI();
-        renderScript();
-        updatePreview();
-    }
+let config = {
+    cardCount: cardData.length,
+    baseSpeed: 0.8,
+    mode: 'orbit', 
+    textureType: 'cyber',
+    focalLength: 800,
+    cx: window.innerWidth / 2,
+    cy: window.innerHeight / 2
+};
 
-    // --- UI 加载与更新 ---
+const textures = { cyber: null, glass: null, dot: null };
 
-    function loadUI() {
-        // Player
-        document.getElementById('player-name').value = data.player.name;
-        document.getElementById('player-thumb').src = data.player.img;
-        document.getElementById('player-shape').value = data.player.shape;
-        document.getElementById('player-border-style').value = data.player.borderStyle;
-        document.getElementById('player-color').value = data.player.color;
+// 默认头像（当没有上传图片时使用）
+const defaultAvatarCanvas = document.createElement('canvas');
+defaultAvatarCanvas.width = 100; defaultAvatarCanvas.height = 100;
+const dCtx = defaultAvatarCanvas.getContext('2d');
+// 画一个渐变圆作为默认头像
+const dGrad = dCtx.createLinearGradient(0,0,100,100);
+dGrad.addColorStop(0, '#333'); dGrad.addColorStop(1, '#555');
+dCtx.fillStyle = dGrad; dCtx.beginPath(); dCtx.arc(50,50,50,0,Math.PI*2); dCtx.fill();
+dCtx.fillStyle = '#888'; dCtx.font = '12px Arial'; dCtx.textAlign='center'; dCtx.fillText("NO IMAGE", 50, 55);
+const defaultAvatarUrl = defaultAvatarCanvas.toDataURL();
 
-        // Boss
-        document.getElementById('boss-name').value = data.boss.name;
-        document.getElementById('boss-thumb').src = data.boss.img;
-        document.getElementById('boss-shape').value = data.boss.shape;
-        document.getElementById('boss-border-style').value = data.boss.borderStyle;
-        document.getElementById('boss-color').value = data.boss.color;
-
-        // BG
-        document.getElementById('bg-thumb').src = data.bg;
-    }
-
-    function updateName(role) {
-        if (role === 'player') data.player.name = document.getElementById('player-name').value;
-        if (role === 'boss') data.boss.name = document.getElementById('boss-name').value;
-        updatePreviewStatic();
-    }
-
-    function updateStyle(role) {
-        if (role === 'player') {
-            data.player.shape = document.getElementById('player-shape').value;
-            data.player.borderStyle = document.getElementById('player-border-style').value;
-            data.player.color = document.getElementById('player-color').value;
-            // 更新左侧缩略图样式
-            const thumb = document.getElementById('player-thumb');
-            applyShapeStyle(thumb, data.player);
-        } else {
-            data.boss.shape = document.getElementById('boss-shape').value;
-            data.boss.borderStyle = document.getElementById('boss-border-style').value;
-            data.boss.color = document.getElementById('boss-color').value;
-            const thumb = document.getElementById('boss-thumb');
-            applyShapeStyle(thumb, data.boss);
-        }
-        updatePreviewStatic();
-    }
-
-    function applyShapeStyle(el, config) {
-        // 重置
-        el.className = 'avatar-preview'; 
-        el.style.border = 'none';
-        el.style.boxShadow = 'none';
+class Card {
+    constructor(index, data) {
+        this.index = index;
+        this.data = data;
+        this.width = 160;
+        this.height = 220; // 稍微矮一点，适应头像布局
         
-        // 形状
-        if (config.shape === 'circle') el.style.borderRadius = '50%';
-        if (config.shape === 'rounded') el.style.borderRadius = '16px';
-        if (config.shape === 'square') el.style.borderRadius = '0';
+        this.x = 0; this.y = 0; this.z = 0;
+        this.targetX = 0; this.targetY = 0; this.targetZ = 0;
+        this.rotX = 0; this.rotY = 0;
+        this.targetRotX = 0; this.targetRotY = 0;
+        
+        if (data.color) {
+            this.colorHue = null; 
+            this.fixedColor = data.color;
+        } else {
+            this.colorHue = Math.random() * 60 + 160; 
+        }
 
-        // 边框 (缩略图用简化样式，实际游戏用更复杂的)
-        if (config.borderStyle === 'solid') el.style.border = `3px solid ${config.color}`;
-        if (config.borderStyle === 'glow') el.style.boxShadow = `0 0 10px ${config.color}`;
+        // 图片对象
+        this.img = new Image();
+        this.updateImage(data.image);
+        
+        // 初始位置
+        this.x = (Math.random() - 0.5) * 2000;
+        this.y = (Math.random() - 0.5) * 2000;
+        this.z = (Math.random() - 0.5) * 2000;
     }
 
-    function handleUpload(input, type) {
-        const file = input.files[0];
-        if (!file) return;
+    updateImage(base64Str) {
+        if (base64Str && base64Str.length > 10) {
+            this.img.src = base64Str;
+        } else {
+            this.img.src = defaultAvatarUrl;
+        }
+    }
 
+    update(time) {
+        this.calculateTarget(time);
+        const ease = 0.05 * config.baseSpeed;
+        
+        this.x += (this.targetX - this.x) * ease;
+        this.y += (this.targetY - this.y) * ease;
+        this.z += (this.targetZ - this.z) * ease;
+        this.rotX += (this.targetRotX - this.rotX) * ease;
+        this.rotY += (this.targetRotY - this.rotY) * ease;
+    }
+
+    calculateTarget(time) {
+        const i = this.index;
+        if (config.mode === 'orbit') {
+            const radius = 350 + (i % 3) * 80;
+            const speed = time * 0.5 * config.baseSpeed + (i * 0.2);
+            if (i === 0) { 
+                this.targetX = 0; this.targetY = 0; this.targetZ = 250;
+                this.targetRotY = speed * 0.5;
+                this.targetRotX = Math.sin(time * 0.2) * 0.1;
+            } else {
+                this.targetX = Math.cos(speed) * radius;
+                this.targetY = Math.sin(speed) * radius * 0.5;
+                this.targetZ = Math.sin(speed) * radius;
+                this.targetRotY = speed + Math.PI / 2;
+                this.targetRotX = 0.2;
+            }
+        } 
+        else if (config.mode === 'helix') {
+            const spacing = 70;
+            const totalHeight = (config.cardCount * spacing) / 2;
+            const yOffset = (i * spacing) - totalHeight;
+            this.targetY = yOffset;
+            this.targetX = Math.sin(time * config.baseSpeed + i * 0.3) * 280;
+            this.targetZ = Math.cos(time * config.baseSpeed + i * 0.3) * 280 - 200;
+            this.targetRotY = time * config.baseSpeed + i;
+            this.targetRotX = 0.5;
+        }
+        else if (config.mode === 'grid') {
+            const cols = 5;
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const gap = 180;
+            this.targetX = (col - 2) * gap;
+            this.targetY = (row - 2) * gap;
+            this.targetZ = 0;
+            this.targetRotX = 0; this.targetRotY = 0;
+        }
+        else if (config.mode === 'random') {
+            if (Math.abs(this.targetX - this.x) < 10) {
+                this.targetX = (Math.random() - 0.5) * 1000;
+                this.targetY = (Math.random() - 0.5) * 600;
+                this.targetZ = (Math.random() - 0.5) * 800;
+            }
+            this.targetRotX += 0.01; this.targetRotY += 0.02;
+        }
+    }
+
+    draw(ctx) {
+        const scale = config.focalLength / (config.focalLength + this.z);
+        const screenX = config.cx + this.x * scale;
+        const screenY = config.cy + this.y * scale;
+        
+        if (scale < 0) return;
+
+        const w = this.width * scale;
+        const h = this.height * scale;
+
+        ctx.save();
+        ctx.translate(screenX, screenY);
+        ctx.scale(scale, scale); 
+        ctx.rotate(this.rotX * 0.5); 
+
+        let mainColor = this.fixedColor || `hsla(${this.colorHue}, 80%, 60%, 1)`;
+        let glowColor = this.fixedColor || `hsla(${this.colorHue}, 80%, 60%, 0.5)`;
+
+        ctx.shadowBlur = 25 * scale;
+        ctx.shadowColor = glowColor;
+
+        let pattern = textures[config.textureType];
+        
+        // 1. 绘制卡片背景
+        ctx.beginPath();
+        ctx.roundRect(-this.width/2, -this.height/2, this.width, this.height, 20);
+        ctx.fillStyle = pattern || '#222';
+        ctx.fill();
+        
+        // 边框
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = mainColor;
+        ctx.stroke();
+
+        // 2. 绘制圆形头像 (QQ头像风格)
+        const avatarRadius = 50; // 半径
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, -35, avatarRadius, 0, Math.PI * 2);
+        ctx.clip(); // 裁剪区域
+        
+        // 绘制图片
+        try {
+            ctx.drawImage(this.img, -avatarRadius, -35 - avatarRadius, avatarRadius*2, avatarRadius*2);
+        } catch(e) {
+            // 如果图片加载失败
+            ctx.fillStyle = '#333';
+            ctx.fill();
+        }
+        ctx.restore();
+
+        // 头像外圈描边
+        ctx.beginPath();
+        ctx.arc(0, -35, avatarRadius, 0, Math.PI * 2);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+
+        // 3. 绘制标题 (无副标题)
+        ctx.shadowBlur = 0;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+        
+        let displayTitle = this.data.title;
+        if (displayTitle.length > 8) displayTitle = displayTitle.substring(0, 8) + '..';
+        ctx.font = 'bold 18px "Segoe UI", sans-serif';
+        ctx.fillText(displayTitle, 0, 35);
+        
+        // 4. 绘制进度条
+        const barWidth = 100;
+        let pVal = parseFloat(this.data.progress);
+        if(isNaN(pVal)) pVal = 0;
+        if(pVal > 1) pVal = 1;
+        if(pVal < 0) pVal = 0;
+
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(-barWidth/2, 70, barWidth, 6);
+        ctx.fillStyle = mainColor;
+        ctx.fillRect(-barWidth/2, 70, barWidth * pVal, 6);
+        
+        // 数值
+        ctx.fillStyle = mainColor;
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(Math.round(pVal * 100) + '%', 0, 90);
+
+        ctx.restore();
+    }
+}
+
+const cards = [];
+
+function init() {
+    resize();
+    createTextures();
+    cards.length = 0;
+    config.cardCount = cardData.length;
+    for(let i = 0; i < cardData.length; i++) {
+        cards.push(new Card(i, cardData[i]));
+    }
+    
+    // 应用保存的背景
+    if(customBgImage) {
+        document.body.style.backgroundImage = `url(${customBgImage})`;
+    }
+}
+
+function createTextures() {
+    const cCanvas = document.createElement('canvas'); cCanvas.width = 100; cCanvas.height = 100;
+    const cCtx = cCanvas.getContext('2d');
+    cCtx.fillStyle = '#1a1a24'; cCtx.fillRect(0,0,100,100);
+    cCtx.strokeStyle = 'rgba(0, 242, 255, 0.15)'; cCtx.lineWidth = 1;
+    cCtx.beginPath(); cCtx.moveTo(0,0); cCtx.lineTo(100,100); cCtx.stroke();
+    cCtx.strokeRect(0,0,100,100);
+    textures.cyber = ctx.createPattern(cCanvas, 'repeat');
+
+    const gCanvas = document.createElement('canvas'); gCanvas.width = 200; gCanvas.height = 200;
+    const gCtx = gCanvas.getContext('2d');
+    const grad = gCtx.createLinearGradient(0,0,200,200);
+    grad.addColorStop(0, '#2b0036'); grad.addColorStop(1, '#001a24');
+    gCtx.fillStyle = grad; gCtx.fillRect(0,0,200,200);
+    textures.glass = ctx.createPattern(gCanvas, 'repeat');
+
+    const dCanvas = document.createElement('canvas'); dCanvas.width = 20; dCanvas.height = 20;
+    const dCtx = dCanvas.getContext('2d');
+    dCtx.fillStyle = '#111'; dCtx.fillRect(0,0,20,20);
+    dCtx.fillStyle = 'rgba(255,255,255,0.1)';
+    dCtx.beginPath(); dCtx.arc(10,10,2,0,Math.PI*2); dCtx.fill();
+    textures.dot = ctx.createPattern(dCanvas, 'repeat');
+}
+
+let time = 0;
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    time += 0.01 * config.baseSpeed;
+    cards.sort((a, b) => b.z - a.z);
+    cards.forEach(card => {
+        card.update(time);
+        card.draw(ctx);
+    });
+    requestAnimationFrame(animate);
+}
+
+// ================= 交互逻辑 =================
+
+function setMode(mode) {
+    config.mode = mode;
+    document.querySelectorAll('.btn-grid button').forEach(b => {
+        if(b.id === `btn-${mode}`) b.classList.add('active');
+        else if(b.id.startsWith('btn-') && 
+!['btn-cyber','btn-glass','btn-dot'].includes(b.id)
+) b.classList.remove('active');
+    });
+}
+
+function setTexture(type) {
+    config.textureType = type;
+    document.querySelectorAll('.btn-grid button').forEach(b => {
+        if(b.id === `btn-${type}`) b.classList.add('active');
+        else if(b.id.startsWith('btn-') && 
+['btn-cyber','btn-glass','btn-dot'].includes(b.id)
+) b.classList.remove('active');
+    });
+}
+
+function resize() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    config.cx = canvas.width / 2; config.cy = canvas.height / 2;
+    config.focalLength = window.innerWidth < 600 ? 500 : 800;
+}
+window.addEventListener('resize', resize);
+
+// ================= 编辑器逻辑 =================
+
+const editorModal = document.getElementById('editorModal');
+const jsonEditor = document.getElementById('jsonEditor');
+
+function openEditor() {
+    jsonEditor.value = JSON.stringify(cardData, null, 4);
+    editorModal.classList.add('open');
+}
+
+function closeEditor() {
+    editorModal.classList.remove('open');
+}
+
+// 处理背景上传
+function handleBgUpload(input) {
+    if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const base64 = e.target.result;
-            if (type === 'player') {
-                data.player.img = base64;
-                document.getElementById('player-thumb').src = base64;
-            } else if (type === 'boss') {
-                data.boss.img = base64;
-                document.getElementById('boss-thumb').src = base64;
-            } else if (type === 'bg') {
-                data.bg = base64;
-                document.getElementById('bg-thumb').src = base64;
-            }
-            updatePreviewStatic();
+        reader.onload = function(e) {
+            customBgImage = e.target.result;
+            document.body.style.backgroundImage = `url(${customBgImage})`;
+            showToast("背景图片已加载");
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 处理卡片图片上传
+function handleCardUpload(input) {
+    const index = parseInt(document.getElementById('cardIndexInput').value);
+    if (isNaN(index) || index < 0 || index >= cardData.length) {
+        alert("请输入有效的卡片序号 (0-" + (cardData.length-1) + ")");
+        return;
     }
 
-    // --- 剧本管理 ---
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64 = e.target.result;
+            // 更新内存中的数据
+            cardData[index].image = base64;
+            // 更新编辑器文本域，让用户看到变化
+            jsonEditor.value = JSON.stringify(cardData, null, 4);
+            // 实时更新卡片显示
+            if(cards[index]) cards[index].updateImage(base64);
+            showToast(`卡片 #${index} 图片已更新`);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
-    function renderScript() {
-        const list = document.getElementById('dialogue-list');
-        list.innerHTML = '';
+function saveAndApply() {
+    try {
+        const newData = JSON.parse(jsonEditor.value);
+        if (!Array.isArray(newData)) throw new Error("数据必须是数组格式");
         
-        data.script.forEach((line, idx) => {
-            const div = document.createElement('div');
-            div.className = 'dialogue-line';
-            
-            const isPlayer = line.speaker === 'player';
-            const name = isPlayer ? data.player.name : data.boss.name;
-            const color = isPlayer ? data.player.color : data.boss.color;
-
-            div.innerHTML = `
-                <div class="line-controls">
-                    <select class="speaker-select" onchange="changeSpeaker(${idx}, this.value)" style="border-color:${color}">
-                        <option value="player" ${isPlayer ? 'selected' : ''}>👤 玩家</option>
-                        <option value="boss" ${!isPlayer ? 'selected' : ''}>👿 BOSS</option>
-                    </select>
-                    <button class="delete-btn" onclick="deleteLine(${idx})">删除</button>
-                </div>
-                <textarea class="text-area" placeholder="输入对话内容..." oninput="updateText(${idx}, this.value)">${line.text}</textarea>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    function addDialogue() {
-        data.script.push({ speaker: 'player', text: '新对话...' });
-        renderScript();
-    }
-
-    window.changeSpeaker = function(idx, val) {
-        data.script[idx].speaker = val;
-        renderScript(); // 重新渲染以更新颜色
-    };
-
-    window.updateText = function(idx, val) {
-        data.script[idx].text = val;
-    };
-
-    window.deleteLine = function(idx) {
-        data.script.splice(idx, 1);
-        renderScript();
-        resetPreview();
-    };
-
-    // --- 预览逻辑 ---
-
-    function updatePreviewStatic() {
-        // 更新头像和名字
-        const leftAv = document.getElementById('game-avatar-left');
-        const rightAv = document.getElementById('game-avatar-right');
-        const nameTag = document.getElementById('game-name');
-
-        leftAv.style.backgroundImage = `url('${data.player.img}')`;
-        rightAv.style.backgroundImage = `url('${data.boss.img}')`;
-
-        // 应用形状和边框
-        applyGameAvatarStyle(leftAv, data.player);
-        applyGameAvatarStyle(rightAv, data.boss);
-
-        // 如果当前正在显示对话，更新名字标签颜色
-        if (currentLine >= 0) {
-            const line = data.script[currentLine];
-            const config = line.speaker === 'player' ? data.player : data.boss;
-            nameTag.style.background = config.color;
-        }
-    }
-
-    function applyGameAvatarStyle(el, config) {
-        el.className = `game-avatar`; // reset
-        // 形状
-        if (config.shape === 'circle') el.style.borderRadius = '50%';
-        if (config.shape === 'rounded') el.style.borderRadius = '30px';
-        if (config.shape === 'square') el.style.borderRadius = '0';
+        cardData.length = 0;
+        newData.forEach(item => cardData.push(item));
         
-        // 边框/光效 (利用CSS变量或直接style)
-        el.style.removeProperty('--avatar-border-color'); // 清理变量
-        el.style.boxShadow = 'none';
-        el.style.border = 'none';
-
-        if (config.borderStyle === 'solid') {
-            el.style.border = `6px solid ${config.color}`;
-            // 为了让实线边框在圆形头像上好看，我们不需要额外处理
-        }
-        if (config.borderStyle === 'glow') {
-            el.style.boxShadow = `0 0 30px ${config.color}`;
-            el.style.border = `2px solid ${config.color}`;
-        }
+        init();
+        closeEditor();
+        showToast("设置已保存并应用！");
+    } catch (e) {
+        alert("JSON 格式错误，请检查输入！\n" + e.message);
     }
+}
 
-    function updatePreview() {
-        updatePreviewStatic();
-        resetPreview();
-    }
+// ================= 导出逻辑 =================
 
-    function resetPreview() {
-        currentLine = -1;
-        document.getElementById('game-scene').className = 'game-scene';
-        document.getElementById('game-text').innerText = "点击屏幕开始游戏";
-        document.getElementById('game-name').innerText = "???";
-        document.getElementById('game-name').style.background = "#333";
-    }
+function exportHTML() {
+    // 1. 准备数据字符串
+    const newDataString = JSON.stringify(cardData, null, 4);
+    
+    // 2. 获取当前 HTML
+    let htmlContent = document.documentElement.outerHTML;
 
-    function nextDialogue() {
-        if (isTyping) return;
+    // 3. 替换数据部分
+    const startTag = "// DATA_START";
+    const endTag = "// DATA_END";
+    const regex = new RegExp(`${startTag}[\\s\\S]*?${endTag}`);
+    const replacement = `${startTag}\nconst cardData = ${newDataString};\n${endTag}`;
+    htmlContent = htmlContent.replace(regex, replacement);
 
-        if (currentLine < data.script.length - 1) {
-            currentLine++;
-            const line = data.script[currentLine];
-            const isPlayer = line.speaker === 'player';
-            const config = isPlayer ? data.player : data.boss;
+    // 4. 注入背景图
+    // 查找 let customBgImage = ""; 并替换
+    // 注意：我们需要转义单引号或双引号，这里使用模板字符串的原始形式
+    const bgScriptInjection = `let customBgImage = ${customBgImage ? `"${customBgImage}"` : '""'};`;
+    
+    // 使用正则找到那行并替换
+    const bgRegex = /let customBgImage = "";/;
+    htmlContent = htmlContent.replace(bgRegex, bgScriptInjection);
 
-            // 设置名字和颜色
-            const nameTag = document.getElementById('game-name');
-            nameTag.innerText = config.name;
-            nameTag.style.background = config.color;
+    // 5. 确保弹窗关闭
+    htmlContent = htmlContent.replace(/class="editor-modal open"/g, 'class="editor-modal"');
 
-            // 切换场景状态 (谁在说话)
-            const scene = document.getElementById('game-scene');
-            if (isPlayer) {
-                scene.className = 'game-scene scene-left-active';
-            } else {
-                scene.className = 'game-scene scene-right-active';
-            }
+    // 6. 下载
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-annual-review-img.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast("HTML 文件已导出！(包含图片)");
+}
 
-            // 打字机效果
-            typeText(line.text);
-        } else {
-            resetPreview();
-        }
-    }
+function showToast(msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast'; toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)';
+        toast.addEventListener('transitionend', () => toast.remove());
+    }, 3000);
+}
 
-    function typeText(text) {
-        const el = document.getElementById('game-text');
-        el.innerText = '';
-        isTyping = true;
-        let i = 0;
-        function loop() {
-            if (i < text.length) {
-                el.innerText += text.charAt(i);
-                i++;
-                setTimeout(loop, 40);
-            } else {
-                isTyping = false;
-            }
-        }
-        loop();
-    }
-
-    function resetAll() {
-        if(confirm('确定重置所有设置吗？')) {
-            data = JSON.parse(JSON.stringify(defaultData));
-            loadUI();
-            renderScript();
-            updatePreview();
-        }
-    }
-
-    // --- 导出功能 ---
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toast-msg').innerText = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    function exportGame() {
-        const json = JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
-        
-        const css = `
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: sans-serif; }
-            #game { width: 100%; height: 100%; max-width: 1000px; max-height: 800px; display: flex; flex-direction: column; background: #222; box-shadow: 0 0 50px rgba(0,0,0,0.5); position: relative; }
-            .scene { flex: 1; background-size: cover; background-position: center; display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 40px; transition: 0.3s; }
-            .avatar { width: 25vw; height: 60vh; background-size: cover; background-position: top center; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-            .avatar.left { margin-left: 50px; transform: scale(0.9) translateY(20px); opacity: 0.6; }
-            .avatar.right { margin-right: 50px; transform: scale(1); opacity: 1; }
-            .scene.s-left .avatar.left { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
-            .scene.s-left .avatar.right { transform: scale(0.9); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
-            .scene.s-right .avatar.right { transform: scale(1.1) translateY(-20px); opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.2)); z-index: 2; }
-            .scene.s-right .avatar.left { transform: scale(0.9); opacity: 0.5; filter: grayscale(0.8); z-index: 1; }
-            .dialogue-box { height: 25vh; background: rgba(0,0,0,0.9); border: 3px solid #fff; border-radius: 12px; margin: 20px; padding: 25px; display: flex; flex-direction: column; position: relative; backdrop-filter: blur(5px); }
-            .name-tag { position: absolute; top: -20px; left: 30px; padding: 8px 24px; border-radius: 30px; border: 3px solid #fff; font-weight: bold; font-size: 1.2rem; color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.3s; }
-            .text { margin-top: 15px; font-size: 1.2rem; color: #fff; white-space: pre-wrap; line-height: 1.6; }
-            .next { position: absolute; bottom: 15px; right: 20px; animation: bounce 1s infinite; }
-            @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-            @media (max-width: 600px) { .avatar { width: 40vw; } .dialogue-box { margin: 10px; height: 30vh; } }
-        `;
-
-        const js = `
-            const d = JSON.parse("${json}");
-            let idx = -1, typing = false;
-            const scene = document.getElementById('scene');
-            const avL = document.getElementById('avL');
-            const avR = document.getElementById('avR');
-            const name = document.getElementById('name');
-            const txt = document.getElementById('txt');
-            const game = document.getElementById('game');
-
-            // 设置初始资源
-            scene.style.backgroundImage = 'url(' + d.bg + ')';
-            avL.style.backgroundImage = 'url(' + d.player.img + ')';
-            avR.style.backgroundImage = 'url(' + d.boss.img + ')';
-
-            // 应用形状样式
-            function applyAvatar(el, c) {
-                if(c.shape==='circle') el.style.borderRadius='50%';
-                if(c.shape==='rounded') el.style.borderRadius='30px';
-                if(c.shape==='square') el.style.borderRadius='0';
-                el.style.boxShadow='none'; el.style.border='none';
-                if(c.borderStyle==='solid') el.style.border='6px solid '+c.color;
-                if(c.borderStyle==='glow') { el.style.boxShadow='0 0 30px '+c.color; el.style.border='2px solid '+c.color; }
-            }
-            applyAvatar(avL, d.player);
-            applyAvatar(avR, d.boss);
-
-            game.onclick = function(){
-                if(typing) return;
-                if(idx < d.script.length - 1){
-                    idx++;
-                    const l = d.script[idx];
-                    const isP = l.speaker === 'player';
-                    const cfg = isP ? d.player : d.boss;
-                    
-                    name.innerText = cfg.name;
-                    name.style.background = cfg.color;
-                    
-                    if(isP) scene.className = 'scene s-left';
-                    else scene.className = 'scene s-right';
-
-                    type(l.text);
-                } else {
-                    idx = -1;
-                    txt.innerText = "点击重播";
-                    scene.className = 'scene';
-                    name.style.background = '#333';
-                    name.innerText = '???';
-                }
-            };
-            function type(str){
-                txt.innerText=''; typing=true;
-                let i=0;
-                function t(){
-                    if(i<str.length){ txt.innerText+=str.charAt(i); i++; setTimeout(t,40); }
-                    else typing=false;
-                }
-                t();
-            }
-        `;
-
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RPG Game</title><style>${css}</style></head><body><div id="game"><div class="scene" id="scene"><div class="avatar left" id="avL"></div><div class="avatar right" id="avR"></div></div><div class="dialogue-box"><div class="name-tag" id="name">???</div><div class="text" id="txt">点击屏幕开始</div><div class="next">▼</div></div></div><script>${js}<\/script></body></html>`;
-
-        const blob = new Blob([html], {type: 'text/html'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `rpg-game-${Date.now()}.html`;
-        a.click();
-        showToast("游戏导出成功！");
-    }
-
-    // 启动
-    init();
-
+// 启动
+init();
+animate();
 </script>
 </body>
 </html>
