@@ -3,670 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeVision | 炫酷代码展示</title>
-    <!-- 引入 Font Awesome 图标库 -->
+    <title>HTML 炫酷展示 | Nodiumis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 Google Fonts: Inter 用于正文, Fira Code 用于代码展示 -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
-    
     <style>
-        /* ====================
-           全局变量与基础设置
-           ==================== */
-        :root {
-            --bg-color: #0d1117;       /* GitHub 深色背景风格 */
-            --card-bg: #161b22;
-            --text-main: #c9d1d9;
-            --text-dim: #8b949e;
-            --accent-primary: #58a6ff; /* 科技蓝 */
-            --accent-secondary: #bc8cff; /* 霓虹紫 */
-            --accent-glow: #1f6feb;    /* 发光蓝 */
-            --border-color: #30363d;
-            --font-body: 'Inter', sans-serif;
-            --font-code: 'Fira Code', monospace;
-            --nav-height: 70px;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        html {
-            scroll-behavior: smooth;
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --accent-blue: #00f2ff;
+            --accent-purple: #bd00ff;
+            --accent-pink: #ff0066;
+            --text-main: #ffffff;
+            --text-muted: #8888aa;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --gradient-1: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            --gradient-2: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-primary);
             color: var(--text-main);
-            font-family: var(--font-body);
-            line-height: 1.6;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-            transition: 0.3s;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        /* ====================
-           导航栏
-           ==================== */
-        header {
+        /* 背景动画 */
+        .bg-particles {
             position: fixed;
             top: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: rgba(13, 17, 23, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 5%;
-        }
-
-        .logo {
-            font-family: var(--font-code);
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo i {
-            font-size: 1.2rem;
-        }
-
-        nav ul {
-            display: flex;
-            gap: 30px;
-        }
-
-        nav a {
-            font-size: 0.95rem;
-            color: var(--text-main);
-            position: relative;
-        }
-
-        nav a:hover {
-            color: var(--accent-primary);
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
             left: 0;
-            background-color: var(--accent-primary);
-            transition: width 0.3s;
-        }
-
-        nav a:hover::after {
             width: 100%;
-        }
-
-        .github-btn {
-            border: 1px solid var(--border-color);
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .github-btn:hover {
-            border-color: var(--text-dim);
-            background-color: var(--border-color);
-        }
-
-        /* 移动端菜单按钮（默认隐藏） */
-        .menu-toggle {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* ====================
-           Hero 区域
-           ==================== */
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5%;
-            position: relative;
-            background: radial-gradient(circle at top right, rgba(88, 166, 255, 0.1), transparent 40%);
-        }
-
-        .hero-content {
-            max-width: 800px;
-            text-align: left;
-        }
-
-        .tagline {
-            color: var(--accent-primary);
-            font-family: var(--font-code);
-            font-size: 1rem;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        h1 {
-            font-size: 4rem;
-            line-height: 1.1;
-            margin-bottom: 25px;
-            background: linear-gradient(135deg, #fff 0%, #8b949e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-dim);
-            margin-bottom: 40px;
-            max-width: 600px;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-primary);
-            color: #000;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-glow);
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--text-dim);
-            background: rgba(255,255,255,0.05);
-        }
-
-        /* 模拟终端窗口动画 */
-        .terminal-window {
-            position: absolute;
-            right: 5%;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 450px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
             overflow: hidden;
-            display: none; /* 大屏显示 */
-            font-family: var(--font-code);
-            font-size: 0.9rem;
         }
 
-        .terminal-header {
-            background: #0d1117;
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-blue);
             border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s infinite;
         }
 
-        .dot.red { background: #ff5f56; }
-        .dot.yellow { background: #ffbd2e; }
-        .dot.green { background: #27c93f; }
-
-        .terminal-body {
-            padding: 20px;
-            color: var(--text-main);
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
-        .code-line {
-            display: block;
-            margin-bottom: 5px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
         }
 
-        .keyword { color: var(--accent-secondary); }
-        .string { color: #a5d6ff; }
-        .function { color: #d2a8ff; }
-        .comment { color: #8b949e; font-style: italic; }
-
-        /* 光标闪烁 */
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 15px;
-            background: var(--accent-primary);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* ====================
-           代码画廊
-           ==================== */
-        .section {
-            padding: 100px 5%;
-        }
-
-        .section-header {
-            margin-bottom: 60px;
+        /* 头部 */
+        header {
+            padding: 80px 0 60px;
             text-align: center;
         }
 
-        .section-header h2 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: inline-block;
         }
 
-        .section-header p {
-            color: var(--text-dim);
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
 
-        .gallery-grid {
+        /* 展示区 */
+        .showcase {
+            padding: 40px 0 100px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 50px;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--gradient-1);
+            border-radius: 2px;
+        }
+
+        .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 30px;
+            margin-top: 40px;
         }
 
-        .code-card {
+        .card {
             background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
             overflow: hidden;
             transition: all 0.3s ease;
+            cursor: pointer;
             position: relative;
         }
 
-        .code-card:hover {
+        .card:hover {
             transform: translateY(-10px);
-            border-color: var(--accent-primary);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: var(--accent-blue);
+            box-shadow: 0 20px 60px rgba(0, 242, 255, 0.2);
         }
 
         .card-preview {
-            height: 180px;
-            background: #010409;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 220px;
+            background-size: cover;
+            background-position: center;
             position: relative;
             overflow: hidden;
         }
-        
-        /* 简单的 CSS 图形模拟项目预览 */
-        .preview-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 4px solid var(--accent-primary);
-            animation: spin 3s linear infinite;
-        }
-        
-        .preview-bar {
-            width: 80%;
-            height: 10px;
-            background: var(--accent-secondary);
-            border-radius: 5px;
-            box-shadow: 0 0 10px var(--accent-secondary);
+
+        .card-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.8));
         }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .card-preview.x-sim {
+            background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
+        }
+
+        .card-preview.review {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 100%);
+        }
+
+        .preview-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: var(--accent-blue);
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .preview-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
 
         .card-content {
             padding: 25px;
         }
 
-        .card-content h3 {
-            font-size: 1.25rem;
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        
-        .lang-tag {
-            font-size: 0.75rem;
-            font-family: var(--font-code);
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: rgba(88, 166, 255, 0.15);
-            color: var(--accent-primary);
+            gap: 10px;
         }
 
-        .card-content p {
-            color: var(--text-dim);
+        .card-desc {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
             font-size: 0.95rem;
-            margin-bottom: 20px;
         }
 
-        .card-stats {
+        .tags {
             display: flex;
-            gap: 15px;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-        }
-
-        .stat-item i {
-            margin-right: 5px;
-            color: var(--accent-secondary);
-        }
-
-        /* ====================
-           特性网格
-           ==================== */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            text-align: center;
-        }
-
-        .feature-item {
-            padding: 30px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 12px;
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            color: var(--accent-primary);
+            flex-wrap: wrap;
+            gap: 8px;
             margin-bottom: 20px;
-            display: inline-block;
         }
 
-        .feature-item h3 {
-            margin-bottom: 10px;
+        .tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
         }
 
-        /* ====================
-           Footer
-           ==================== */
-        footer {
-            border-top: 1px solid var(--border-color);
-            padding: 50px 5%;
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        .social-links {
-            margin-bottom: 20px;
+        .card-actions {
             display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 8px;
         }
 
-        .social-links a {
-            font-size: 1.2rem;
+        .btn-primary {
+            background: var(--gradient-1);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
             color: var(--text-main);
+            border: 1px solid var(--card-border);
         }
 
-        .social-links a:hover {
-            color: var(--accent-primary);
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* ====================
-           响应式设计
-           ==================== */
-        @media (min-width: 992px) {
-            .terminal-window {
-                display: block;
-            }
+        /* 底部 */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid var(--card-border);
+            color: var(--text-muted);
         }
 
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-purple);
+        }
+
+        /* 响应式 */
         @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
+            .logo {
+                font-size: 2rem;
+            }
             
-            nav ul {
-                display: none; /* 简化处理，移动端隐藏导航链接 */
+            .section-title {
+                font-size: 1.5rem;
             }
-
-            .menu-toggle { display: block; }
-
-            .hero {
-                flex-direction: column;
-                text-align: center;
-                justify-content: center;
-                height: auto;
-                padding: 120px 5% 60px;
+            
+            .card-preview {
+                height: 180px;
             }
-
-            .hero-content { text-align: center; }
-
-            .cta-buttons { justify-content: center; }
-
-            .features-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <!-- 背景粒子 -->
+    <div class="bg-particles" id="particles"></div>
 
-    <!-- 导航栏 -->
-    <header>
-        <a href="#" class="logo">
-            <i class="fa-solid fa-code"></i>
-            CodeVision
-        </a>
-        <nav>
-            <ul>
-                <li><a href="#home">首页</a></li>
-                <li><a href="#gallery">代码画廊</a></li>
-                <li><a href="#philosophy">理念</a></li>
-            </ul>
-        </nav>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="https://github.com" target="_blank" class="github-btn">
-                <i class="fa-brands fa-github"></i> GitHub
-            </a>
-            <div class="menu-toggle">
-                <i class="fa-solid fa-bars"></i>
-            </div>
-        </div>
-    </header>
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <div class="logo">✨ HTML 炫酷展示</div>
+            <p class="tagline">
+                前端工程师的玩具盒，用纯 HTML/CSS/JS 打造的互动体验<br>
+                无需框架，无需依赖，所见即所得
+            </p>
+        </header>
 
-    <!-- 首页 Hero 区域 -->
-    <section id="home" class="hero">
-        <div class="hero-content">
-            <span class="tagline">&lt;Hello World /&gt;</span>
-            <h1>代码不仅仅是逻辑<br>更是艺术</h1>
-            <p>欢迎来到我的代码展示空间。这里汇集了算法之美、前端动效与高效架构的完美融合。探索那些枯燥字符背后的无限可能。</p>
-            <div class="cta-buttons">
-                <a href="#gallery" class="btn btn-primary">浏览代码</a>
-                <a href="#philosophy" class="btn btn-outline">了解更多</a>
-            </div>
-        </div>
-
-        <!-- 纯 CSS 装饰用的终端窗口 -->
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="dot red"></div>
-                <div class="dot yellow"></div>
-                <div class="dot green"></div>
-            </div>
-            <div class="terminal-body">
-                <span class="code-line"><span class="keyword">import</span> { Creativity } <span class="keyword">from</span> <span class="string">'@core/mind'</span>;</span>
-                <span class="code-line"><span class="keyword">const</span> <span class="function">initCoolCode</span> = () => {</span>
-                <span class="code-line">&nbsp;&nbsp;<span class="keyword">return</span> {</span>
-                <span class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;style: <span class="string">'Cyberpunk'</span>,</span>
-                <span class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;logic: <span class="string">'Elegant'</span>,</span>
-                <span class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;deploy: <span class="string">'GitHub Pages'</span></span>
-                <span class="code-line">&nbsp;&nbsp;};</span>
-                <span class="code-line">};</span>
-                <span class="code-line"><br></span>
-                <span class="code-line"><span class="comment">// Generating magic...</span></span>
-                <span class="code-line">> <span class="function">initCoolCode</span>(); <span class="cursor"></span></span>
-            </div>
-        </div>
-    </section>
-
-    <!-- 代码画廊 -->
-    <section id="gallery" class="section">
-        <div class="section-header">
-            <h2>精选项目展示</h2>
-            <p>每一个 commit 都是一次进步，每一行代码都值得被展示。</p>
-        </div>
-
-        <div class="gallery-grid">
-            <!-- 卡片 1 -->
-            <div class="code-card">
-                <div class="card-preview">
-                    <div class="preview-circle"></div>
+        <!-- 展示区 -->
+        <section class="showcase">
+            <h2 class="section-title">精选项目</h2>
+            
+            <div class="cards-grid">
+                <!-- X 模拟器卡片 -->
+                <div class="card">
+                    <div class="card-preview x-sim">
+                        <i class="fa-brands fa-x-twitter preview-icon"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">
+                            <i class="fa-brands fa-x-twitter" style="color: #fff;"></i>
+                            X 模拟器 Pro
+                        </h3>
+                        <p class="card-desc">
+                            拥有上帝视角的社交媒体模拟器。自定义帖子、头像、互动数据，让你体验当网红的感觉（虽然只有你自己看）
+                        </p>
+                        <div class="tags">
+                            <span class="tag">CSS Grid</span>
+                            <span class="tag">交互式</span>
+                            <span class="tag">实时预览</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="showcase%20html/%E6%A8%A1%E6%8B%9FX.html" class="btn btn-primary" target="_blank">
+                                <i class="fa-solid fa-play"></i> 打开体验
+                            </a>
+                            <a href="https://github.com/Nodiumis/Aonsnv-FSN-showcase/blob/main/showcase%20html/%E6%A8%A1%E6%8B%9FX.html" class="btn btn-secondary" target="_blank">
+                                <i class="fa-brands fa-github"></i> 源码
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-content">
-                    <h3>Neon Animations <span class="lang-tag">CSS3</span></h3>
-                    <p>一套基于纯 CSS3 实现的高性能霓虹灯光效库，无需 JavaScript 即可实现复杂的视觉交互。</p>
-                    <div class="card-stats">
-                        <span class="stat-item"><i class="fa-solid fa-star"></i> 128</span>
-                        <span class="stat-item"><i class="fa-solid fa-code-fork"></i> 45</span>
+
+                <!-- 年度回顾生成器卡片 -->
+                <div class="card">
+                    <div class="card-preview review">
+                        <i class="fa-solid fa-calendar-days preview-icon"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">
+                            <i class="fa-solid fa-calendar-days" style="color: var(--accent-purple);"></i>
+                            年度回顾生成器
+                        </h3>
+                        <p class="card-desc">
+                            3D 炫酷年度总结卡片展示。支持自定义图片、进度数据、多种动画模式，让你的年度总结看起来像科幻电影
+                        </p>
+                        <div class="tags">
+                            <span class="tag">Canvas</span>
+                            <span class="tag">3D 动画</span>
+                            <span class="tag">可导出</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="showcase%20html/code.html" class="btn btn-primary" target="_blank">
+                                <i class="fa-solid fa-play"></i> 打开体验
+                            </a>
+                            <a href="https://github.com/Nodiumis/Aonsnv-FSN-showcase/blob/main/showcase%20html/code.html" class="btn btn-secondary" target="_blank">
+                                <i class="fa-brands fa-github"></i> 源码
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- 卡片 2 -->
-            <div class="code-card">
-                <div class="card-preview">
-                    <div class="preview-bar"></div>
-                </div>
-                <div class="card-content">
-                    <h3>Data Visualizer <span class="lang-tag">React</span></h3>
-                    <p>一个轻量级的数据可视化组件，能够将枯燥的 JSON 数据实时转换为炫酷的动态图表。</p>
-                    <div class="card-stats">
-                        <span class="stat-item"><i class="fa-solid fa-star"></i> 342</span>
-                        <span class="stat-item"><i class="fa-solid fa-code-fork"></i> 89</span>
-                    </div>
-                </div>
-            </div>
+        <!-- 底部 -->
+        <footer>
+            <p>Made with <i class="fa-solid fa-heart" style="color: var(--accent-pink);"></i> by <a href="https://github.com/Nodiumis">Nodiumis</a></p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/Nodiumis/Aonsnv-FSN-showcase" target="_blank">
+                    <i class="fa-brands fa-github"></i> GitHub 仓库
+                </a>
+                <a href="https://github.com/Nodiumis" target="_blank">
+                    <i class="fa-brands fa-github"></i> 个人主页
+                </a>
+            </p>
+        </footer>
+    </div>
 
-            <!-- 卡片 3 -->
-            <div class="code-card">
-                <div class="card-preview">
-                    <!-- 使用 icon 模拟预览内容 -->
-                    <i class="fa-solid fa-cube" style="font-size: 3rem; color: var(--accent-primary);"></i>
-                </div>
-                <div class="card-content">
-                    <h3>3D Algorithm Engine <span class="lang-tag">Python</span></h3>
-                    <p>基于 Python 的三维空间算法引擎，用于计算复杂几何路径与最优解。</p>
-                    <div class="card-stats">
-                        <span class="stat-item"><i class="fa-solid fa-star"></i> 890</span>
-                        <span class="stat-item"><i class="fa-solid fa-code-fork"></i> 120</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 理念 -->
-    <section id="philosophy" class="section" style="background: rgba(255,255,255,0.02);">
-        <div class="section-header">
-            <h2>代码哲学</h2>
-            <p>不只是为了让它跑起来，更是为了让它变得优雅。</p>
-        </div>
-        
-        <div class="features-grid">
-            <div class="feature-item">
-                <i class="fa-solid fa-bolt feature-icon"></i>
-                <h3>极致性能</h3>
-                <p>每一个渲染周期都经过精心优化，确保在任何设备上都能达到 60fps 的流畅体验。</p>
-            </div>
-            <div class="feature-item">
-                <i class="fa-solid fa-wand-magic-sparkles feature-icon"></i>
-                <h3>视觉美学</h3>
-                <p>坚信代码也是视觉艺术的一部分。缩进、命名、结构，处处体现秩序之美。</p>
-            </div>
-            <div class="feature-item">
-                <i class="fa-brands fa-github feature-icon"></i>
-                <h3>开源精神</h3>
-                <p>拥抱社区，基于 GitHub 协作开发。代码透明，贡献公开，共同进步。</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- 页脚 -->
-    <footer>
-        <div class="social-links">
-            <a href="#"><i class="fa-brands fa-github"></i></a>
-            <a href="#"><i class="fa-brands fa-twitter"></i></a>
-            <a href="#"><i class="fa-brands fa-stack-overflow"></i></a>
-            <a href="#"><i class="fa-brands fa-dribbble"></i></a>
-        </div>
-        <p>&copy; 2023 CodeVision. Deployed on GitHub Pages.</p>
-        <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.6;">Designed with <i class="fa-solid fa-heart" style="color: var(--accent-secondary);"></i> by AI Assistant</p>
-    </footer>
-
-    <!-- 简单的滚动交互脚本 -->
     <script>
-        // 监听滚动，改变导航栏透明度
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.style.background = 'rgba(13, 17, 23, 0.95)';
-                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
-            } else {
-                header.style.background = 'rgba(13, 17, 23, 0.85)';
-                header.style.boxShadow = 'none';
+        // 生成背景粒子
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                
+                // 随机颜色
+                const colors = ['#00f2ff', '#bd00ff', '#ff0066'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                container.appendChild(particle);
             }
-        });
+        }
 
-        // 简单的移动端菜单切换
-        const menuToggle = document.querySelector('.menu-toggle');
-        const nav = document.querySelector('nav ul');
-        
-        menuToggle.addEventListener('click', () => {
-            // 简单的显示/隐藏切换
-            if (nav.style.display === 'flex') {
-                nav.style.display = 'none';
-            } else {
-                nav.style.display = 'flex';
-                nav.style.flexDirection = 'column';
-                nav.style.position = 'absolute';
-                nav.style.top = '70px';
-                nav.style.left = '0';
-                nav.style.width = '100%';
-                nav.style.background = '#0d1117';
-                nav.style.padding = '20px';
-                nav.style.borderBottom = '1px solid #30363d';
-            }
+        // 初始化
+        createParticles();
+
+        // 卡片点击效果
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.btn')) {
+                    const primaryBtn = card.querySelector('.btn-primary');
+                    if (primaryBtn) {
+                        primaryBtn.click();
+                    }
+                }
+            });
         });
     </script>
 </body>
